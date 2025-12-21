@@ -741,7 +741,7 @@ if menu == "Analytics":
                 st.caption("Belum ada genre ≥ 10 film setelah filter.")
 
         with tab3:
-            st.markdown("#### Top profit (butuh budget & revenue)")
+            st.markdown("#### Top profit")
             fin = filtered_df.dropna(subset=["budget", "revenue"]).copy()
             fin = fin[(fin["budget"] > 0) & (fin["revenue"] > 0)]
             if len(fin) == 0:
