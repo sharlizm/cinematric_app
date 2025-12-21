@@ -1,4 +1,3 @@
-%%writefile app.py
 import math
 import re
 from urllib.parse import quote_plus
