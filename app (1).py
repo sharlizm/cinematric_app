@@ -264,7 +264,7 @@ st.title("🎬 Cinematric : Sistem Analisis & Dashboard Film Menggunakan Algorit
 
 # ===== HANDLE NAVIGATION FLAG (HARUS DI ATAS RADIO) =====
 if st.session_state.get("go_detail"):
-    st.session_state.menu = "Detail (Direct)"
+    st.session_state.menu = "Detail"
     st.session_state.go_detail = False
 
 with st.sidebar:
