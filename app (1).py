@@ -1,3 +1,4 @@
+%%writefile app.py
 import math
 import re
 from urllib.parse import quote_plus
@@ -697,8 +698,12 @@ if menu == "Analytics":
 
         with tab2:
             st.markdown("#### Top genre by count")
-            g = filtered_df["genre_clean"].value_counts().head(15).sort_values(ascending=True)
-            st.bar_chart(g) if len(g) else st.info("Tidak ada genre.")
+            g = filtered_df["genre_clean"].value_counts().head(10).sort_values(ascending=False)
+            if len(g) > 0:
+                st.bar_chart(g)
+            else:
+                st.info("Tidak ada genre.")
+
 
             st.markdown("#### Genre rating terbaik (min 10 film)")
             g2 = (
