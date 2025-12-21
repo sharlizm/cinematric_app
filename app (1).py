@@ -696,12 +696,35 @@ if menu == "Analytics":
 
 
         with tab2:
+            import altair as alt
+
             st.markdown("#### Top genre by count")
-            g = filtered_df["genre_clean"].value_counts().head(10).sort_values(ascending=False)
+
+            g = (
+                filtered_df["genre_clean"]
+                .value_counts()
+                .head(10)
+                .sort_values(ascending=True)   
+                .reset_index()
+            )
+
+            g.columns = ["Genre", "Jumlah Film"]
+
             if len(g) > 0:
-                st.bar_chart(g)
+                chart = (
+                    alt.Chart(g)
+                    .mark_bar()
+                    .encode(
+                        x=alt.X("Jumlah Film:Q", title="Jumlah Film"),
+                        y=alt.Y("Genre:N", sort=None, title="Genre"),
+                        tooltip=["Genre", "Jumlah Film"]
+                    )
+                    .properties(height=350)
+                )
+                st.altair_chart(chart, use_container_width=True)
             else:
                 st.info("Tidak ada genre.")
+
 
 
             st.markdown("#### Genre rating terbaik (min 10 film)")
@@ -712,7 +735,10 @@ if menu == "Analytics":
                 .reset_index()
             )
             g2 = g2[g2["n"] >= 10].sort_values("avg", ascending=False).head(12)
-            st.dataframe(g2, use_container_width=True) if len(g2) else st.caption("Belum ada genre ≥ 10 film setelah filter.")
+            if len(g2) > 0:
+                st.dataframe(g2, use_container_width=True)
+            else:
+                st.caption("Belum ada genre ≥ 10 film setelah filter.")
 
         with tab3:
             st.markdown("#### Top profit (butuh budget & revenue)")
