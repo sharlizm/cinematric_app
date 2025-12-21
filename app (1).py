@@ -15,9 +15,7 @@ st.set_page_config(
 
 # LINEAR SEARCH
 def linear_search_movies(data: list, query: str, limit: int = 10):
-    """
-    Linear search: O(n)
-    """
+    # O(n)
     query = query.lower().strip()
     results = []
 
@@ -32,9 +30,6 @@ def linear_search_movies(data: list, query: str, limit: int = 10):
 
 # QUICK SORT
 def quick_sort_movies(arr, key, descending=True):
-    """
-    Quick Sort (rekursif)
-    """
     if len(arr) <= 1:
         return arr
 
@@ -106,15 +101,14 @@ img { border-radius: 12px; }
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 
-# DATASET LOAD
+# LOAD DATA
 SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1Rvj1KhbgFOrKQFz54IbssPmEUvtd5IGyXPR9f7WLuS0/export?format=csv"
-
 
 @st.cache_data(show_spinner=False)
 def load_data(url: str) -> pd.DataFrame:
     df = pd.read_csv(url)
 
-    # Ensure columns exist
+    # Cols
     expected = [
         "title","genre","subgenre","rating","duration","year","vote_count","popularity",
         "budget","revenue","imdb_id","homepage","overview","tagline","director","cast",
@@ -124,7 +118,7 @@ def load_data(url: str) -> pd.DataFrame:
         if c not in df.columns:
             df[c] = None
 
-    # Coerce numeric
+    # Numeric
     for c in ["rating","duration","year","vote_count","popularity","budget","revenue","budget_adj","revenue_adj"]:
         df[c] = pd.to_numeric(df[c], errors="coerce")
 
@@ -142,27 +136,23 @@ def load_data(url: str) -> pd.DataFrame:
 
     return df
 
-
 movies_df = load_data(SHEET_CSV_URL)
+
 
 # HASH TABLE
 @st.cache_data(show_spinner=False)
 def build_movie_hash(df: pd.DataFrame):
-    """
-    Hash table: imdb_id -> movie data
-    """
+    # buat lookup imdb_id biar dapet data film
     table = {}
     for row in df.to_dict(orient="records"):
         imdb = (row.get("imdb_id") or "").strip()
         if imdb:
             table[imdb] = row
     return table
-
-
 movie_hash = build_movie_hash(movies_df)
 
 
-# TMDb API (POSTERS + DETAILS)
+# POSTERS & DETAILS
 import os
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
@@ -173,14 +163,11 @@ if not TMDB_API_KEY:
     except Exception:
         TMDB_API_KEY = None
 
-
 TMDB_BASE = "https://api.themoviedb.org/3"
 
-
+# HEADER
 def tmdb_headers():
-    # TMDb v3
     return {"Accept": "application/json"}
-
 
 @st.cache_data(show_spinner=False)
 def tmdb_get_configuration(api_key: str):
@@ -189,13 +176,9 @@ def tmdb_get_configuration(api_key: str):
     r.raise_for_status()
     return r.json()
 
-
 @st.cache_data(show_spinner=False)
 def tmdb_find_movie_id_by_imdb(api_key: str, imdb_id: str):
-    """
-    Uses TMDb /find/{external_id}?external_source=imdb_id
-    Returns tmdb movie_id or None
-    """
+    # ubah imdb_id jadi tmdb movie_id lewat endpoint /find
     imdb_id = (imdb_id or "").strip()
     if not imdb_id:
         return None
@@ -218,12 +201,9 @@ def tmdb_find_movie_id_by_imdb(api_key: str, imdb_id: str):
         return None
     return results[0].get("id")
 
-
 @st.cache_data(show_spinner=False)
 def tmdb_movie_details(api_key: str, movie_id: int):
-    """
-    Get details + videos + credits + similar in one call.
-    """
+    # ambil detail, video, credit, dan film serupa lewat sekali call
     url = f"{TMDB_BASE}/movie/{movie_id}"
     r = requests.get(
         url,
@@ -238,7 +218,6 @@ def tmdb_movie_details(api_key: str, movie_id: int):
         return None
     return r.json()
 
-
 def build_img_url(conf, path: str, size: str = "w500"):
     if not conf or not path:
         return None
@@ -248,19 +227,14 @@ def build_img_url(conf, path: str, size: str = "w500"):
         return None
     return f"{base}{size}{path}"
 
-
 def imdb_url(imdb_id: str) -> str:
     imdb_id = (imdb_id or "").strip()
     if not imdb_id or not re.match(r"^tt\d{5,}$", imdb_id):
         return ""
     return f"https://www.imdb.com/title/{imdb_id}/"
 
-
 def youtube_url_from_tmdb_videos(videos_block: dict) -> str:
-    """
-    Pick a trailer if available.
-    TMDb videos: results[] with site=YouTube and type=Trailer/Teaser
-    """
+    # pilih trailer jika ada dari TMDb videos (Yt, tipe Trailer/Teaser)
     if not videos_block:
         return ""
     results = videos_block.get("results") or []
@@ -286,8 +260,7 @@ def weighted_rating(row, m, C):
 
 
 # SIDEBAR: GLOBAL FILTERS + NAV
-st.title("🎬 Cinematric — Netflix-style Poster Grid + Detail Page")
-st.caption("Poster & detail diambil dari TMDb (butuh TMDB_API_KEY). Klik poster → detail ala Netflix.")
+st.title("🎬 Cinematric : Sistem Analisis & Dashboard Film Menggunakan Algoritma Struktur Data")
 
 # ===== HANDLE NAVIGATION FLAG (HARUS DI ATAS RADIO) =====
 if st.session_state.get("go_detail"):
@@ -312,7 +285,7 @@ with st.sidebar:
     st.markdown("---")
     menu = st.radio(
         "Menu",
-        ["Home (Poster Grid)", "Detail (Direct)", "Analytics"],
+        ["Home", "Detail", "Analytics"],
         key = "menu"
     )
 
@@ -327,11 +300,9 @@ filtered_df = filtered_df[
 if sel_genres:
     filtered_df = filtered_df[filtered_df["genre_clean"].isin(sel_genres)]
 
-
 # TMDb readiness check
 if not TMDB_API_KEY:
-    st.warning("TMDb belum aktif: set **TMDB_API_KEY** di Streamlit secrets / environment dulu, baru poster & detail bisa muncul.")
-
+    st.warning("TMDb belum aktif, perlu set **TMDB_API_KEY**.")
 
 # STATE: SELECTED MOVIE
 if "selected_imdb" not in st.session_state:
@@ -342,14 +313,12 @@ qp = st.query_params
 if "imdb" in qp and qp["imdb"]:
     st.session_state.selected_imdb = qp["imdb"]
 
-
 def set_selected_imdb(imdb_id: str):
     st.session_state.selected_imdb = imdb_id
     st.query_params["imdb"] = imdb_id
 
-
-# PAGE: HOME (POSTER GRID)
-if menu == "Home (Poster Grid)":
+# PAGE: HOME
+if menu == "Home":
     # KPIs
     total = len(filtered_df)
     c1, c2, c3, c4 = st.columns(4)
@@ -371,8 +340,9 @@ if menu == "Home (Poster Grid)":
         ["Trending (popularity)", "Top picks (weighted rating)", "Newest", "Most voted"],
         index=1
     )
-    # ubah DataFrame → list of dict
+    # ubah DataFrame -> list of dict
     movie_list = df_rank.to_dict(orient="records")
+
 
     # sorting pakai Quick Sort (rekursif)
     if sort_mode == "Trending (popularity)":
@@ -386,7 +356,6 @@ if menu == "Home (Poster Grid)":
 
     else:  # Most voted
         movie_list = quick_sort_movies(movie_list, key="vote_count")
-
 
 
     # Search bar (LINEAR SEARCH)
@@ -478,7 +447,7 @@ if menu == "Home (Poster Grid)":
                     sub += f"  •  📅 {int(year)}" if pd.notna(year) else ""
                     st.markdown(f'<div class="cm-sub">{sub}</div>', unsafe_allow_html=True)
 
-                    # Click → detail
+                    # Click -> detail
                     if st.button("Open", key=f"open_{start}_{idx}_{imdb_id or title}"):
                         if imdb_id:
                             set_selected_imdb(imdb_id)
@@ -486,15 +455,15 @@ if menu == "Home (Poster Grid)":
                             st.rerun()
 
                         else:
-                            st.warning("Film ini tidak punya imdb_id di dataset, jadi tidak bisa di-map ke TMDb.")
+                            st.warning("Film ini tidak punya imdb_id di dataset, tidak bisa mapping ke TMDb")
 
                     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.caption("Tip: klik poster → masuk detail. Kalau poster kosong, biasanya imdb_id tidak match / TMDb tidak punya data.")
+    st.caption("Tip: klik poster untuk masuk detail. Jika poster kosong, TMDb tidak punya data.")
 
 
 # PAGE: DETAIL
-elif menu == "Detail (Direct)":
+elif menu == "Detail":
 
     # Ambil imdb_id terpilih dari state
     pick = st.session_state.selected_imdb
@@ -538,20 +507,16 @@ elif menu == "Detail (Direct)":
                         st.rerun()
                     else:
                         st.warning("Film ini tidak punya imdb_id di dataset.")
-    # kalau belum pilih film, STOP di sini
+
     if not pick:
         st.info("Pilih film dulu.")
         st.stop()
 
 
-    # LANJUT KE DETAIL RENDER
-
     # Pull dataset row (HASH TABLE - O(1))
     ds = movie_hash.get((pick or "").strip(), {})
 
-
-
-    if menu == "Detail (Direct)":
+    if menu == "Detail":
         if not pick:
             st.info("Pilih film dulu.")
         else:
@@ -567,7 +532,7 @@ elif menu == "Detail (Direct)":
 
                 tmdb_id = tmdb_find_movie_id_by_imdb(TMDB_API_KEY, pick)
                 if not tmdb_id:
-                    st.error("Tidak ketemu mapping TMDb untuk imdb_id ini.")
+                    st.error("Gagal mapping TMDb untuk imdb_id ini.")
                 else:
                     details = tmdb_movie_details(TMDB_API_KEY, tmdb_id)
                     if not details:
@@ -680,7 +645,7 @@ elif menu == "Detail (Direct)":
                         similar = (details.get("similar") or {}).get("results") or []
                         st.markdown("### 🎞️ Similar Movies (from TMDb)")
                         if not similar:
-                            st.info("TMDb tidak punya similar untuk film ini.")
+                            st.info("TMDb tidak ditemukan film serupa.")
                         else:
                             # show as horizontal-ish grid
                             sim_cols = st.columns(8, gap="small")
@@ -696,14 +661,14 @@ elif menu == "Detail (Direct)":
                                     st.caption(sim_title)
 
                         st.markdown("---")
-                        with st.expander("📦 Data dari dataset kamu (raw)"):
+                        with st.expander("📦 Data dari dataset"):
                             show_cols = ["title","genre","subgenre","rating","duration","year","vote_count","popularity","budget","revenue","profit","roi","director","cast","keywords"]
                             st.dataframe(pd.DataFrame([ds]).reindex(columns=show_cols), use_container_width=True)
 
 
 # PAGE: ANALYTICS
 if menu == "Analytics":
-    st.subheader("📊 Analytics (Filtered)")
+    st.subheader("📊 Analytics")
 
     if len(filtered_df) == 0:
         st.warning("Tidak ada data setelah filter.")
@@ -768,4 +733,4 @@ if menu == "Analytics":
         mime="text/csv"
     )
 
-st.caption("Cinematric • Netflix-style grid via TMDb • Pastikan TMDB_API_KEY sudah diset.")
+st.caption("Cinematric - Netflix-style grid via TMDb")
