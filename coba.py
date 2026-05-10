@@ -411,32 +411,32 @@ hero_backdrop = get_backdrop(hero_movie["imdb_id"])
 
 if hero_backdrop:
 
+    st.image(
+        hero_backdrop,
+        use_container_width=True
+    )
+
     st.markdown(
         f"""
-        <div class="hero">
+        # 🎬 {hero_movie["title"]}
 
-            <img src="{hero_backdrop}" width="100%">
+        AI-Powered Hybrid Recommendation System  
+        inspired by Netflix recommendation architecture.
 
-            <div class="hero-overlay"></div>
-
-            <div class="hero-content">
-
-                <div class="hero-title">
-                    {hero_movie["title"]}
-                </div>
-
-                <div class="hero-sub">
-                    AI-Powered Hybrid Recommendation System
-                    inspired by Netflix recommendation architecture.
-                    Discover movies using content similarity,
-                    popularity analysis, and intelligent scoring.
-                </div>
-
-            </div>
-
-        </div>
+        Discover movies using:
+        - Content-Based Recommendation
+        - Hybrid Recommendation
+        - Cosine Similarity
+        - Popularity Scoring
         """,
-        unsafe_allow_html=True
+    )
+
+else:
+
+    st.title("🎬 Cinematric AI")
+
+    st.write(
+        "AI-Powered Hybrid Recommendation System"
     )
 
 # =========================================================
