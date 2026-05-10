@@ -410,7 +410,6 @@ hero_movie = movies_df.sort_values(
 hero_backdrop = get_backdrop(hero_movie["imdb_id"])
 
 if hero_backdrop:
-
     st.image(
         hero_backdrop,
         use_container_width=True
@@ -418,88 +417,22 @@ if hero_backdrop:
 
     st.markdown(
         f"""
-        # 🎬 {hero_movie["title"]}
+# {hero_movie["title"]}
 
-        AI-Powered Hybrid Recommendation System  
-        inspired by Netflix recommendation architecture.
+AI-Powered Hybrid Recommendation System  
+inspired by Netflix recommendation architecture.
 
-        Discover movies using:
-        - Content-Based Recommendation
-        - Hybrid Recommendation
-        - Cosine Similarity
-        - Popularity Scoring
-        """,
+Discover movies using:
+- Content-Based Recommendation
+- Hybrid Recommendation
+- Cosine Similarity
+- Popularity Scoring
+"""
     )
 
 else:
-
-    st.title("🎬 Cinematric AI")
-
-    st.write(
-        "AI-Powered Hybrid Recommendation System"
-    )
-
-# =========================================================
-# SEARCH BAR
-# =========================================================
-
-st.markdown(
-    '<div class="section-title">🔎 Search Movies</div>',
-    unsafe_allow_html=True
-)
-
-query = st.text_input(
-    "",
-    placeholder="Search movies..."
-)
-
-if query:
-
-    search_result = search_movies(query)
-
-    cols = st.columns(6)
-
-    for idx, (_, row) in enumerate(search_result.iterrows()):
-
-        with cols[idx % 6]:
-
-            poster = get_poster(row["imdb_id"])
-
-            st.markdown(
-                '<div class="movie-card">',
-                unsafe_allow_html=True
-            )
-
-            if poster:
-                st.image(
-                    poster,
-                    use_container_width=True
-                )
-
-            st.markdown(
-                f"""
-                <div class="movie-title">
-                    {row["title"]}
-                </div>
-
-                <div class="movie-sub">
-                    ⭐ {row["rating"]:.1f}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-            if st.button(
-                "Select",
-                key=f"search_{idx}"
-            ):
-                st.session_state.selected_movie = row["title"]
-                st.rerun()
-
-            st.markdown(
-                '</div>',
-                unsafe_allow_html=True
-            )
+    st.title("Cinematric AI")
+    st.write("AI-Powered Hybrid Recommendation System")
 
 # =========================================================
 # TRENDING
